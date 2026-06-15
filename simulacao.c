@@ -111,6 +111,47 @@ void iniciar_sessao() {
     printf("  Potencia   : %.1f kW\n", carregadores[numero].potencia_kw);
     printf("  Horario    : %s\n", carregadores[numero].horario);
     printf("----------------------------------------------\n");
+    float calcular_tarifa(float potencia_solicitada) {
+
+    
+    time_t agora = time(NULL);
+    struct tm *t = localtime(&agora);
+    int hora = t->tm_hour;
+
+    float tarifa_base;
+
+    if (hora >= 18 && hora <= 21) {
+        tarifa_base = 2.50;  
+        printf("[TARIFA] Horario de pico (18h-21h): R$ %.2f/kWh\n", tarifa_base);
+    } else if (hora >= 22 || hora <= 5) {
+        tarifa_base = 1.20;  
+        printf("[TARIFA] Horario economico (22h-05h): R$ %.2f/kWh\n", tarifa_base);
+    } else {
+        tarifa_base = 1.80;  
+        printf("[TARIFA] Horario normal: R$ %.2f/kWh\n", tarifa_base);
+    }
+
+    float carga_atual = potencia_em_uso();
+    float percentual  = carga_atual / LIMITE_POTENCIA;
+
+    if (percentual >= 0.80) {
+        tarifa_base *= 1.30;  
+        printf("[TARIFA] Adicional de demanda alta (+30%%): R$ %.2f/kWh\n", tarifa_base);
+    } else if (percentual >= 0.50) {
+        tarifa_base *= 1.10;  // +10% se estacao com 50%+ de carga
+        printf("[TARIFA] Adicional de demanda media (+10%%): R$ %.2f/kWh\n", tarifa_base);
+    }
+
+    
+    if (potencia_solicitada >= 30.0) {
+        tarifa_base *= 1.15;  // +15% para cargas rapidas (alta potencia)
+        printf("[TARIFA] Adicional carga rapida (+15%%): R$ %.2f/kWh\n", tarifa_base);
+    }
+
+    printf("[TARIFA] Tarifa final aplicada: R$ %.2f/kWh\n", tarifa_base);
+    return tarifa_base;
+}
+
 }
  void encerrar_sessao() {
  
@@ -158,7 +199,7 @@ void iniciar_sessao() {
     double minutos  = segundos / 60.0;
     double horas    = segundos / 3600.0;
     float energia   = carregadores[numero].potencia_kw * horas;
-    float preco_kwh = 1.80;
+    float preco_kwh = calcular_tarifa(carregadores[numero].potencia_kw);
     float total     = energia * preco_kwh;
  
     
@@ -221,14 +262,7 @@ void ver_status() {
     printf("  Disponivel                : %.1f kW\n", disponivel);
     printf("----------------------------------------------\n");
 
- float em_uso     = potencia_em_uso();
-    float disponivel = LIMITE_POTENCIA - em_uso;
  
-    printf("\n----------------------------------------------\n");
-    printf("  Potencia total da estacao : %.1f kW\n", LIMITE_POTENCIA);
-    printf("  Em uso                    : %.1f kW\n", em_uso);
-    printf("  Disponivel                : %.1f kW\n", disponivel);
-    printf("----------------------------------------------\n");
 
 }
 
@@ -250,7 +284,7 @@ void gerar_relatorio() {
     int sessoes_ativas = 0;
     float faturamento_estimado = 0;
     float energia_total = 0;
-    float preco_kwh = 1.80;
+    float preco_kwh = calcular_tarifa(carregadores[i].potencia_kw);
  
     for (i = 0; i < MAX_CARREGADORES; i++) {
  
