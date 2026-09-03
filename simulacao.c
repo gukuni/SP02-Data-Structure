@@ -297,12 +297,8 @@ void ver_status() {
     printf("  Disponivel                : %.1f kW\n", disponivel);
     printf("----------------------------------------------\n");
 
-<<<<<<< HEAD
-=======
- 
 
->>>>>>> 65327f499cd35e5645953b0a21514c2084b61ac4
-}
+
 
 void buscar_sessao(){
     if (total_sessoes == 0) {
@@ -321,16 +317,16 @@ void buscar_sessao(){
     int meio;
     int encontrado = -1;
  
-<<<<<<< HEAD
+
     while (inicio <= fim) {
         meio = (inicio + fim) / 2;
-=======
+
     int i;
     int sessoes_ativas = 0;
     float faturamento_estimado = 0;
     float energia_total = 0;
     float preco_kwh = calcular_tarifa(carregadores[i].potencia_kw);
->>>>>>> 65327f499cd35e5645953b0a21514c2084b61ac4
+
  
         if (historico[meio].id == id_busca) {
             encontrado = meio;
