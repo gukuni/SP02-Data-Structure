@@ -4,20 +4,28 @@
 #include <time.h>
  
 #define MAX_CARREGADORES 3
-#define LIMITE_POTENCIA 50.0  
+#define MAX_sessoes 100
+#define LIMITE_POTENCIA 50.0
+#define PRECO_KWH 1.80  
  
-
 typedef struct {
-    char cpf[12];         
-    int ativo;            
-    float potencia_kw;    
-    char horario[20];     
-    time_t inicio;        
+    int    id;
+    char   cpf[12];
+    int    carregador;
+    float  potencia_kw;
+    float  energia;
+    float  tempo;
+    float  custo;
+    char   horario[20];
+    time_t inicio;
+    int    ativo;
 } Sessao;
  
 
 Sessao carregadores[MAX_CARREGADORES];
- 
+Sessao historico[MAX_sessoes];
+ int total_sessoes = 0;
+ int proximo_id = 1;
 
 float potencia_em_uso() {
     float total = 0;
@@ -138,13 +146,13 @@ void iniciar_sessao() {
         tarifa_base *= 1.30;  
         printf("[TARIFA] Adicional de demanda alta (+30%%): R$ %.2f/kWh\n", tarifa_base);
     } else if (percentual >= 0.50) {
-        tarifa_base *= 1.10;  // +10% se estacao com 50%+ de carga
+        tarifa_base *= 1.10;  
         printf("[TARIFA] Adicional de demanda media (+10%%): R$ %.2f/kWh\n", tarifa_base);
     }
 
     
     if (potencia_solicitada >= 30.0) {
-        tarifa_base *= 1.15;  // +15% para cargas rapidas (alta potencia)
+        tarifa_base *= 1.15;  
         printf("[TARIFA] Adicional carga rapida (+15%%): R$ %.2f/kWh\n", tarifa_base);
     }
 
@@ -226,6 +234,33 @@ void iniciar_sessao() {
     carregadores[numero].potencia_kw = 0;
     strcpy(carregadores[numero].horario, "");
 }
+ 
+void listar_sesoses(){
+
+    printf("\n--- HISTÓRICO DE SESSOES ---\n\n");
+
+    if (total_sessoes == 0) {
+        printf("Nenhuma sessao registrada.\n");
+        return;
+    }
+
+    int i;
+    for (i = 0; i < total_sessoes; i++){
+        printf("  ID: %d | CPF: %s | Box: %d | %.2f kWh | %.1f min | R$ %.2f | %s\n",
+            historico[i].id,
+            historico[i].cpf,
+            historico[i].carregador + 1,
+            historico[i].energia,
+            historico[i].tempo,
+            historico[i].custo,
+            historico[i].horario
+        );
+    } 
+    printf("\nTotal de sessoes registradas: %d\n", total_sessoes);
+
+}
+
+
 void ver_status() {
  
     printf("\n--- STATUS DOS CARREGADORES ---\n\n");
@@ -262,70 +297,150 @@ void ver_status() {
     printf("  Disponivel                : %.1f kW\n", disponivel);
     printf("----------------------------------------------\n");
 
+<<<<<<< HEAD
+=======
  
 
+>>>>>>> 65327f499cd35e5645953b0a21514c2084b61ac4
 }
 
-void gerar_relatorio() {
+void buscar_sessao(){
+    if (total_sessoes == 0) {
+        printf("\n  Nenhuma sessao registrada ainda.\n");
+        return;
+    }
  
-    printf("\n==============================================\n");
-    printf("         RELATORIO DA ESTACAO\n");
-    printf("==============================================\n");
+    int id_busca;
+    printf("\n--- BUSCAR SESSAO ---\n");
+    printf("Digite o ID da sessao: ");
+    scanf("%d", &id_busca);
  
     
-    time_t agora = time(NULL);
-    char horario_atual[20];
-    struct tm *t = localtime(&agora);
-    strftime(horario_atual, 20, "%d/%m/%Y %H:%M", t);
-    printf("  Gerado em: %s\n", horario_atual);
-    printf("----------------------------------------------\n");
+    int inicio = 0;
+    int fim    = total_sessoes - 1;
+    int meio;
+    int encontrado = -1;
  
+<<<<<<< HEAD
+    while (inicio <= fim) {
+        meio = (inicio + fim) / 2;
+=======
     int i;
     int sessoes_ativas = 0;
     float faturamento_estimado = 0;
     float energia_total = 0;
     float preco_kwh = calcular_tarifa(carregadores[i].potencia_kw);
+>>>>>>> 65327f499cd35e5645953b0a21514c2084b61ac4
  
-    for (i = 0; i < MAX_CARREGADORES; i++) {
- 
-        printf("\n  Carregador %d: ", i + 1);
- 
-        if (carregadores[i].ativo == 0) {
-            printf("LIVRE\n");
+        if (historico[meio].id == id_busca) {
+            encontrado = meio;
+            break;
+        } else if (historico[meio].id < id_busca) {
+            inicio = meio + 1;
         } else {
- 
-            
-            double segundos = difftime(agora, carregadores[i].inicio);
-            double minutos  = segundos / 60.0;
-            double horas    = segundos / 3600.0;
-            float energia   = carregadores[i].potencia_kw * horas;
-            float valor     = energia * preco_kwh;
- 
-            faturamento_estimado += valor;
-            energia_total        += energia;
-            sessoes_ativas++;
- 
-            printf("EM USO\n");
-            printf("    CPF         : %s\n", carregadores[i].cpf);
-            printf("    Inicio      : %s\n", carregadores[i].horario);
-            printf("    Potencia    : %.1f kW\n", carregadores[i].potencia_kw);
-            printf("    Decorrido   : %.1f minutos\n", minutos);
-            printf("    Energia     : %.3f kWh\n", energia);
-            printf("    Valor atual : R$ %.2f\n", valor);
+            fim = meio - 1;
         }
     }
  
+    if (encontrado == -1) {
+        printf("  Sessao com ID %d nao encontrada.\n", id_busca);
+    } else {
+        printf("\n----------------------------------------------\n");
+        printf("  SESSAO ENCONTRADA!\n");
+        printf("----------------------------------------------\n");
+        printf("  ID         : %d\n",   historico[encontrado].id);
+        printf("  CPF        : %s\n",   historico[encontrado].cpf);
+        printf("  Carregador : Box %d\n", historico[encontrado].carregador);
+        printf("  Horario    : %s\n",   historico[encontrado].horario);
+        printf("  Duracao    : %.1f minutos\n", historico[encontrado].tempo);
+        printf("  Energia    : %.3f kWh\n", historico[encontrado].energia);
+        printf("  Total      : R$ %.2f\n", historico[encontrado].custo);
+    }
+}
+void ordenar_sessoes() {
+ 
+    if (total_sessoes == 0) {
+        printf("\n  Nenhuma sessao para ordenar.\n");
+        return;
+    }
+ 
+    printf("\n--- ORDENAR SESSOES ---\n");
+    printf("  1 - Por ID\n");
+    printf("  2 - Por energia consumida\n");
+    printf("  3 - Por custo\n");
+    printf("  4 - Por tempo\n");
+    printf("  Escolha: ");
+ 
+    int criterio;
+    scanf("%d", &criterio);
+ 
     
+    int i, j, min_idx;
+    Sessao temp;
+ 
+    for (i = 0; i < total_sessoes - 1; i++) {
+        min_idx = i;
+ 
+        for (j = i + 1; j < total_sessoes; j++) {
+ 
+            int trocar = 0;
+ 
+            if      (criterio == 1 && historico[j].id      < historico[min_idx].id)      trocar = 1;
+            else if (criterio == 2 && historico[j].energia < historico[min_idx].energia) trocar = 1;
+            else if (criterio == 3 && historico[j].custo   < historico[min_idx].custo)   trocar = 1;
+            else if (criterio == 4 && historico[j].tempo   < historico[min_idx].tempo)   trocar = 1;
+ 
+            if (trocar) min_idx = j;
+        }
+ 
+        
+        if (min_idx != i) {
+            temp             = historico[i];
+            historico[i]     = historico[min_idx];
+            historico[min_idx] = temp;
+        }
+    }
+ 
+    printf("  Sessoes ordenadas com sucesso!\n");
+    listar_sessoes();
+}
+
+void mostrar_estatisticas() {
+ 
     printf("\n==============================================\n");
-    printf("         RESUMO GERAL\n");
+    printf("           ESTATISTICAS DA ESTACAO\n");
     printf("==============================================\n");
-    printf("  Sessoes ativas          : %d / %d\n", sessoes_ativas, MAX_CARREGADORES);
-    printf("  Potencia em uso         : %.1f / %.1f kW\n", potencia_em_uso(), LIMITE_POTENCIA);
-    printf("  Energia entregue        : %.3f kWh\n", energia_total);
-    printf("  Faturamento estimado    : R$ %.2f\n", faturamento_estimado);
-    printf("  Tarifa aplicada         : R$ %.2f/kWh\n", preco_kwh);
+ 
+    if (total_sessoes == 0) {
+        printf("  Nenhuma sessao registrada ainda.\n");
+        return;
+    }
+ 
+    float energia_total = 0;
+    float faturamento   = 0;
+    float maior_consumo = historico[0].energia;
+    float menor_consumo = historico[0].energia;
+ 
+    int i;
+    for (i = 0; i < total_sessoes; i++) {
+        energia_total += historico[i].energia;
+        faturamento   += historico[i].custo;
+ 
+        if (historico[i].energia > maior_consumo) maior_consumo = historico[i].energia;
+        if (historico[i].energia < menor_consumo) menor_consumo = historico[i].energia;
+    }
+ 
+    float ticket_medio = faturamento / total_sessoes;
+ 
+    printf("  Sessoes realizadas : %d\n",    total_sessoes);
+    printf("  Energia fornecida  : %.3f kWh\n", energia_total);
+    printf("  Faturamento total  : R$ %.2f\n",  faturamento);
+    printf("  Ticket medio       : R$ %.2f\n",  ticket_medio);
+    printf("  Maior consumo      : %.3f kWh\n", maior_consumo);
+    printf("  Menor consumo      : %.3f kWh\n", menor_consumo);
     printf("==============================================\n");
 }
+
  
 void exibir_menu() {
     printf("\n==============================================\n");
@@ -333,8 +448,11 @@ void exibir_menu() {
     printf("==============================================\n");
     printf("  1 - Iniciar nova sessao\n");
     printf("  2 - Encerrar sessao\n");
-    printf("  3 - Ver status dos carregadores\n");
-    printf("  4 - Gerar relatorio\n");
+    printf("  3 - Listar sessões\n");
+    printf("  4 - Buscar sessao por ID\n");
+    printf("  5 - Ordernar sessões\n");
+    printf("  6 - Estatísticas\n");
+    printf("  7 - Status dos carregadores\n");
     printf("  0 - Sair\n");
     printf("==============================================\n");
     printf("  Escolha uma opcao: ");
@@ -363,10 +481,19 @@ int main() {
                 encerrar_sessao();
                 break;
             case 3:
-                ver_status();
+                listar_sessoes();
                 break;
             case 4:
-                gerar_relatorio();
+                buscar_sessao();
+                break;
+            case 5:
+                ordenar_sessoes();
+                break;
+            case 6:
+                mostrar_estatisticas();
+                break;
+            case 7:
+                ver_status();
                 break;
             case 0:
                 printf("\nSistema encerrado.\n");
