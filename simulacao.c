@@ -253,7 +253,7 @@ void encerrar_sessao()
     strcpy(carregadores[numero].horario, "");
 }
 
-void listar_sesoses()
+void listar_sessoes()
 {
 
     printf("\n--- HISTÓRICO DE SESSOES ---\n\n");
@@ -477,10 +477,10 @@ void exibir_menu()
     printf("==============================================\n");
     printf("  1 - Iniciar nova sessao\n");
     printf("  2 - Encerrar sessao\n");
-    printf("  3 - Listar sessões\n");
+    printf("  3 - Listar sessoes\n");
     printf("  4 - Buscar sessao por ID\n");
-    printf("  5 - Ordernar sessões\n");
-    printf("  6 - Estatísticas\n");
+    printf("  5 - Ordernar sessoes\n");
+    printf("  6 - Estatisticas\n");
     printf("  7 - Status dos carregadores\n");
     printf("  0 - Sair\n");
     printf("==============================================\n");
