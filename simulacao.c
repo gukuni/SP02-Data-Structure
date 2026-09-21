@@ -10,6 +10,15 @@
 
 typedef struct
 {
+    char cpf[12];
+    float potencia_kw;
+    char horario[20];
+    time_t inicio;
+    int ativo;
+} Carregador;
+
+typedef struct
+{
     int id;
     char cpf[12];
     int carregador;
@@ -18,12 +27,10 @@ typedef struct
     float tempo;
     float custo;
     char horario[20];
-    time_t inicio;
-    int ativo;
-} Sessao;
+} Registro;
 
-Sessao carregadores[MAX_CARREGADORES];
-Sessao historico[MAX_sessoes];
+Carregador carregadores[MAX_CARREGADORES];
+Registro historico[MAX_sessoes];
 int total_sessoes = 0;
 int proximo_id = 1;
 
@@ -247,6 +254,23 @@ void encerrar_sessao()
     printf("  Total      : R$ %.2f\n", total);
     printf("----------------------------------------------\n");
 
+    if (total_sessoes < MAX_sessoes)
+    {
+        historico[total_sessoes].id = proximo_id++;
+        strcpy(historico[total_sessoes].cpf, carregadores[numero].cpf);
+        historico[total_sessoes].carregador = numero;
+        historico[total_sessoes].potencia_kw = carregadores[numero].potencia_kw;
+        historico[total_sessoes].energia = energia;
+        historico[total_sessoes].tempo = (float)minutos;
+        historico[total_sessoes].custo = total;
+        strcpy(historico[total_sessoes].horario, horario_fim);
+        total_sessoes++;
+    }
+    else
+    {
+        printf("Aviso: historico cheio, sessao nao foi salva!\n");
+    }
+
     carregadores[numero].ativo = 0;
     strcpy(carregadores[numero].cpf, "");
     carregadores[numero].potencia_kw = 0;
@@ -256,7 +280,7 @@ void encerrar_sessao()
 void listar_sessoes()
 {
 
-    printf("\n--- HISTÓRICO DE SESSOES ---\n\n");
+    printf("\n--- HISTORICO DE SESSOES ---\n\n");
 
     if (total_sessoes == 0)
     {
@@ -331,27 +355,13 @@ void buscar_sessao()
     printf("Digite o ID da sessao: ");
     scanf("%d", &id_busca);
 
-    int inicio = 0;
-    int fim = total_sessoes - 1;
-    int meio;
     int encontrado = -1;
-
-    while (inicio <= fim)
+    for (int i = 0; i < total_sessoes; i++)
     {
-        meio = (inicio + fim) / 2;
-
-        if (historico[meio].id == id_busca)
+        if (historico[i].id == id_busca)
         {
-            encontrado = meio;
+            encontrado = i;
             break;
-        }
-        else if (historico[meio].id < id_busca)
-        {
-            inicio = meio + 1;
-        }
-        else
-        {
-            fim = meio - 1;
         }
     }
 
@@ -393,7 +403,7 @@ void ordenar_sessoes()
     scanf("%d", &criterio);
 
     int i, j, min_idx;
-    Sessao temp;
+    Registro temp;
 
     for (i = 0; i < total_sessoes - 1; i++)
     {
